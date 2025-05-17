@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>圖片抓取器</title>
+    <style>
+        body {
+          font-family: sans-serif;
+          padding: 20px;
+        }
+        img {
+          max-width: 200px;
+          margin: 10px;
+          display: inline-block;
+        }
+    </style>
+</head>
+<body>
+<h1>輸入網頁 URL 抓取圖片</h1>
+<input type="text" id="urlInput" placeholder="例如：https://example.com" style="width: 400px;" />
+<button onclick="fetchImages()">抓取</button>
+
+<div id="imagesContainer" style="margin-top: 20px;"></div>
+
+<script>
+    async function fetchImages() {
+      const url = document.getElementById('urlInput').value;
+      const container = document.getElementById('imagesContainer');
+      container.innerHTML = '讀取中...';
+
+      try {
+        const response = await fetch('http://localhost:8080/api/extract-images', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ url })
+        });
+
+        if (!response.ok) throw new Error('伺服器錯誤');
+
+        const imageList = await response.json();
+        container.innerHTML = '';
+
+        if (imageList.length === 0) {
+          container.innerHTML = '找不到圖片。';
+        } else {
+          imageList.forEach(src => {
+            const img = document.createElement('img');
+            img.src = src;
+            container.appendChild(img);
+          });
+        }
+      } catch (err) {
+        console.error(err);
+        container.innerHTML = '請確認網址正確，或伺服器是否啟動。';
+      }
+    }
+</script>
+</body>
+</html>
